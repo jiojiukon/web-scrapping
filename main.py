@@ -1,4 +1,5 @@
-from progress.bar import FillingCirclesBar
+import time
+import tqdm
 from bs4 import BeautifulSoup
 from fake_headers import Headers
 import time
@@ -19,21 +20,28 @@ search_page = main_url + r'search/vacancy'
 search_params = {'text':'python, django, flask', 'area':['1','2']}
 session = HTMLSession()
 
+
+
+
+
 def get_response(page_url, params=None):
     response = session.get(page_url, params=params, headers=headers)
     return response
 
 
-def vacansies_info(page_link):
+def vacansies_info(page_link,try_):
     vacancies = []
     r = get_response(page_link, params=search_params)
-    r.html.render(scrolldown=10)
+    r.html.render(retries=1, wait=0.000001, scrolldown=1)
     vacancies_body = r.html.find('.serp-item__title')
-    for vacancy in vacancies_body:
-        name = vacancy.text
-        link = vacancy.links.pop()
-        salary = get_salary(link)
-        vacancies.append([name,link,salary])
+    with tqdm.tqdm(total=len(vacancies_body), desc=f'page {try_}') as progress_bar:
+        for vacancy in vacancies_body:
+            name = vacancy.text
+            link = vacancy.links.pop()
+            salary = get_salary(link)
+            vacancies.append([name,link,salary])
+            time.sleep(0.1)
+            progress_bar.update(len(vacancies_body)/len(vacancies_body))
     return vacancies
 
 
@@ -60,10 +68,10 @@ def main():
     n = 0
     if not final_dic:
         n+=1
-        final_dic[f'{n}-ая страница'] = {num+1: {info[0]: info[1:]} for num, info in enumerate(vacansies_info(search_page))}
+        final_dic[f'{n}-ая страница'] = {num+1: {info[0]: info[1:]} for num, info in enumerate(vacansies_info(search_page, n))}
     for i in get_pages_links():
         n+=1
-        final_dic[f'{n}-ая страница'] = {num+1: {info[0]: info[1:]} for num, info in enumerate(vacansies_info(i))}
+        final_dic[f'{n}-ая страница'] = {num+1: {info[0]: info[1:]} for num, info in enumerate(vacansies_info(i,n))}
 
 
 
@@ -71,3 +79,5 @@ if __name__ == '__main__':
     main()
     with open('vacancies.json', 'w', encoding='utf-8') as f:
         json.dump(final_dic, f, ensure_ascii=False)
+    print('compleate')
+    
