@@ -27,7 +27,7 @@ def get_response(page_url, params=None):
 def vacansies_info(page_link):
     vacancies = []
     r = get_response(page_link, params=search_params)
-    r.html.render(retries=5, sleep=0.1, scrolldown=10)
+    r.html.render(scrolldown=10)
     vacancies_body = r.html.find('.serp-item__title')
     for vacancy in vacancies_body:
         name = vacancy.text
@@ -69,5 +69,5 @@ def main():
 
 if __name__ == '__main__':
     main()
-    with open('vacancies.json', 'w') as f:
-        json.dump(final_dic, f)
+    with open('vacancies.json', 'w', encoding='utf-8') as f:
+        json.dump(final_dic, f, ensure_ascii=False)
