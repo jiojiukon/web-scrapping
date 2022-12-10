@@ -31,8 +31,8 @@ def get_response(page_url, params=None):
 
 def vacansies_info(page_link,try_):
     vacancies = []
-    r = get_response(page_link, params=search_params)
-    r.html.render(sleep=0.1, scrolldown=25)
+    r = get_response(page_url=page_link, params=search_params)
+    r.html.render(sleep=0.1, scrolldown=30)
     vacancies_body = r.html.find('.serp-item__title')
     with tqdm.tqdm(total=len(vacancies_body), desc=f'page {try_}') as progress_bar:
         for vacancy in vacancies_body:
