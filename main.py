@@ -7,17 +7,17 @@ from requests_html import HTMLSession
 import json
 
 
-# headers = Headers(os='win', browser='chrome')
-headers = {
-    'sec-ch-ua-platform': '"Windows"',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
-}
+headers = Headers(os='win', browser='chrome')
+# headers = {
+#     'sec-ch-ua-platform': '"Windows"',
+#     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+# }
 
 final_dic = {}
 
 main_url = r'https://spb.hh.ru/'
 search_page = main_url + r'search/vacancy'
-search_params = {'text':'python, django, flask', 'area':['1','2']}
+search_params = {'text':'Python, Django, Flask', 'area':['1','2']}
 session = HTMLSession()
 
 
@@ -25,14 +25,14 @@ session = HTMLSession()
 
 
 def get_response(page_url, params=None):
-    response = session.get(page_url, params=params, headers=headers)
+    response = session.get(page_url, params=params, headers=headers.generate())
     return response
 
 
 def vacansies_info(page_link,try_):
     vacancies = []
     r = get_response(page_link, params=search_params)
-    r.html.render(retries=1, wait=0.000001, scrolldown=1)
+    r.html.render(sleep=0.1, scrolldown=25)
     vacancies_body = r.html.find('.serp-item__title')
     with tqdm.tqdm(total=len(vacancies_body), desc=f'page {try_}') as progress_bar:
         for vacancy in vacancies_body:
@@ -68,10 +68,10 @@ def main():
     n = 0
     if not final_dic:
         n+=1
-        final_dic[f'{n}-ая страница'] = {num+1: {info[0]: info[1:]} for num, info in enumerate(vacansies_info(search_page, n))}
+        final_dic[f'{n} search page'] = {info[0]: {'link' : info[1], 'salary' : info[2]} for num, info in enumerate(vacansies_info(search_page, n))}
     for i in get_pages_links():
         n+=1
-        final_dic[f'{n}-ая страница'] = {num+1: {info[0]: info[1:]} for num, info in enumerate(vacansies_info(i,n))}
+        final_dic[f'{n} search page'] = {info[0]: {'link': info[1], 'salary' : info[2]} for num, info in enumerate(vacansies_info(i,n))}
 
 
 
